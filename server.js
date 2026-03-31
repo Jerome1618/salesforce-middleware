@@ -8,7 +8,9 @@ app.use(express.json());
 app.use(cors());
 
 app.use((req, res, next) => {
-  if (req.path === "/") {
+  const publicPaths = ["/", "/health", "/test-search"];
+
+  if (publicPaths.includes(req.path)) {
     return next();
   }
 
@@ -206,6 +208,39 @@ app.get("/cases/:id/context", async (req, res) => {
         currentBlocker: "unknown",
         missingInfo: []
       }
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get("/test-search", async (req, res) => {
+  try {
+    const { caseNumber } = req.query;
+
+    if (!caseNumber) {
+      return res.status(400).json({ error: "Provide caseNumber" });
+    }
+
+    const soql = `
+      SELECT Id, CaseNumber, Subject, Status, Priority, CreatedDate
+      FROM Case
+      WHERE CaseNumber = '${caseNumber}'
+      ORDER BY CreatedDate DESC
+      LIMIT 5
+    `;
+
+    const records = await querySF(soql);
+
+    res.json({
+      cases: records.map(c => ({
+        id: c.Id,
+        caseNumber: c.CaseNumber,
+        subject: c.Subject,
+        status: c.Status,
+        priority: c.Priority,
+        createdDate: c.CreatedDate
+      }))
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
