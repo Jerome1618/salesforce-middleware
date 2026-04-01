@@ -248,6 +248,7 @@ app.get("/test-search", async (req, res) => {
     details: e.response?.data || null
   });
 }
+});
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server running");
