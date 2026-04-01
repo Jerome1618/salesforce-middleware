@@ -243,9 +243,11 @@ app.get("/test-search", async (req, res) => {
       }))
     });
   } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+  res.status(500).json({
+    error: e.message,
+    details: e.response?.data || null
+  });
+}
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server running");
